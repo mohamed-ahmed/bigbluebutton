@@ -20,6 +20,7 @@ package org.bigbluebutton.app.video;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.red5.server.api.so.ISharedObject;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.adapter.MultiThreadedApplicationAdapter;
 import org.red5.server.api.IConnection;
@@ -36,10 +37,12 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 	
 	private IScope appScope;
 	private IServerStream serverStream;
-	
+	private VideoEventSender sender;
 	private boolean recordVideoStream = false;
 	private EventRecordingService recordingService;
 	private final Map<String, IStreamListener> streamListeners = new HashMap<String, IStreamListener>();
+	
+	private static final String PRESENTATION_SO = "presentationSO";
 	
     @Override
 	public boolean appStart(IScope app) {
@@ -50,6 +53,24 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 		return true;
 	}
 
+	@Override
+	public boolean roomConnect(IConnection connection, Object[] params) {
+		log.debug(":roomConnect");
+		ISharedObject so = getSharedObject(connection.getScope(), PRESENTATION_SO);
+		sender.setSharedObject(so);
+		return true;
+	}
+	
+    @Override
+	public boolean roomStart(IScope scope) {
+    	if (!hasSharedObject(scope, PRESENTATION_SO)) {
+    		if (createSharedObject(scope, PRESENTATION_SO, false)) {    			
+				log.debug(" Creating shared object for - " + scope.getName());
+    		}
+    	}
+    	return true;
+    }
+    
     @Override
 	public boolean appConnect(IConnection conn, Object[] params) {
 		log.info("oflaDemo appConnect"); 
@@ -135,6 +156,10 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 	
 	public void setEventRecordingService(EventRecordingService s) {
 		recordingService = s;
+	}
+	
+	public void setVideoEventSender(VideoEventSender s) {
+		sender = s;
 	}
 	
 }

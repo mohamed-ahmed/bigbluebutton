@@ -29,8 +29,16 @@
 	<bean id="web.handler" class="org.bigbluebutton.app.video.VideoApplication">
 		<property name="recordVideoStream" value="false"/>
 		<property name="eventRecordingService" ref="redisRecorder"/>
+		<property name="videoEventSender" ref="videoEventSender"/>
+	</bean>
+	
+	<bean id="video.service" class="org.bigbluebutton.app.video.VideoClientService">
+		<property name="videoEventSender" ref="videoEventSender"/>
 	</bean>
 
+	<bean id="videoEventSender" class="org.bigbluebutton.app.video.VideoEventSender">
+	</bean>
+	
 	<bean id="redisRecorder" class="org.bigbluebutton.app.video.EventRecordingService">
         <constructor-arg index="0" value="${redis.host}"/>
         <constructor-arg index="1" value="${redis.port}"/>
