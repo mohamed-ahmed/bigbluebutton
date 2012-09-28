@@ -55,7 +55,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 
 	@Override
 	public boolean roomConnect(IConnection connection, Object[] params) {
-		log.debug(":roomConnect");
+		log.debug("*************** room connect ****************** ");
 		ISharedObject so = getSharedObject(connection.getScope(), PRESENTATION_SO);
 		sender.setSharedObject(so);
 		return true;
@@ -65,7 +65,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 	public boolean roomStart(IScope scope) {
     	if (!hasSharedObject(scope, PRESENTATION_SO)) {
     		if (createSharedObject(scope, PRESENTATION_SO, false)) {    			
-				log.debug(" Creating shared object for - " + scope.getName());
+				log.debug("****** Creating shared object for - " + scope.getName());
     		}
     	}
     	return true;
