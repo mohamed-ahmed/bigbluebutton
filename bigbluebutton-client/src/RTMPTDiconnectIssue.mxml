@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+               xmlns:s="library://ns.adobe.com/flex/spark" 
+               xmlns:mx="library://ns.adobe.com/flex/mx" 
+               creationComplete="onCreationComplete()"
+               minWidth="955" minHeight="600">
+  <fx:Declarations>
+    <!-- Place non-visual elements (e.g., services, value objects) here -->
+  </fx:Declarations>
+  
+  <fx:Script>
+    <![CDATA[
+      import mx.controls.Alert;
+      
+      private var conn:NetConnection;
+      
+      private function onCreationComplete():void {
+//        Alert.show('on creation complete');
+        trace('on creation complete');
+      }
+      
+      private var vidURL:String = "rtmpt://192.168.153.128/video/testroom";
+      
+      private function onClick():void {
+ //       Alert.show('connect');
+        conn = new NetConnection();
+        conn.client = this;
+        conn.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
+        conn.connect(vidURL);       
+      }
+      
+      public function onNetStatus(event:NetStatusEvent):void {
+ //       Alert.show('connected');
+        trace('connected');
+        connectToSO();
+      }
+      
+      private static const SHAREDOBJECT:String = "presentationSO";
+      private var _presentationSO:SharedObject;
+      
+      private function connectToSO() : void {
+        _presentationSO = SharedObject.getRemote(SHAREDOBJECT, vidURL, false);	
+        _presentationSO.client = this;
+        _presentationSO.addEventListener(SyncEvent.SYNC, syncHandler);
+        _presentationSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+        _presentationSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);					
+        _presentationSO.connect(conn);				
+      }
+      
+      private function sendMessage(msg:String):void{
+        conn.call("video.sendMessage",// Remote function name
+          new Responder(
+            // On successful result
+            function(result:Boolean):void {              
+              if (result) {
+                trace("Successfully sent sendCursorUpdate");							
+              }	
+            },	
+            // status - On error occurred
+            function(status:Object):void { 
+              trace("Error occurred:"); 
+              for (var x:Object in status) { 
+                trace(x + " : " + status[x]); 
+              } 
+            }
+          ), //new Responder
+          msg
+        ); //_netConnection.call
+      }
+      
+      private var msgCount:int = 0;
+      private var MAX_COUNT:int = 1000000;
+      
+      public function receiveChatMessage(message:String):void {
+//        msgCount++;
+//        if (msgCount == MAX_COUNT - 1) {
+//          Alert.show(message);
+//        }      
+        receiveText.text = message;
+      }
+      
+      private function syncHandler(event:SyncEvent):void {
+        Alert.show("!!!!! Presentation sync handler - " + event.changeList.length );
+        var st:String;
+        for (var i:int = 1; i <= MAX_COUNT; i++) {
+          st = "Hello world! [" + i + "]";
+          sendText.text = st;
+          sendMessage(st);
+        }          
+      }
+        
+        private function netStatusHandler (event:NetStatusEvent):void {
+          var statusCode:String = event.info.code;
+          Alert.show("!!!!! Presentation status handler - " + event.info.code );
+          switch (statusCode) {
+            case "NetConnection.Connect.Success":
+              Alert.show(":Connection Success");
+              break;			
+            case "NetConnection.Connect.Failed":
+              Alert.show("PresentSO connection failed");			
+              break;					
+            case "NetConnection.Connect.Closed":
+              Alert.show("Connection to PresentSO was closed.");									
+              break;					
+            case "NetConnection.Connect.InvalidApp":
+              Alert.show("PresentSO not found in server");				
+              break;					
+            case "NetConnection.Connect.AppShutDown":
+              Alert.show("PresentSO is shutting down");
+              break;					
+            case "NetConnection.Connect.Rejected":
+              Alert.show("No permissions to connect to the PresentSO");
+              break;					
+            default :
+              Alert.show(":default - " + event.info.code );
+              break;
+          }
+        }
+        
+        private function asyncErrorHandler (event:AsyncErrorEvent):void {
+          Alert.show("PresentSO asynchronous error.");
+        }
+        
+    ]]>
+  </fx:Script>
+  
+  <mx:VBox id="vb" width="100%" height="100%">
+    <s:Button id="Me" label="Handle Click" click="onClick()"/>
+    <mx:Canvas id="dc" width="100%" height="100%">		
+      <mx:Text id="sendText" text="Foo bar" x="400" y="200"/>
+      <mx:Text id="receiveText" text="Foo bar" x="400" y="300"/>
+    </mx:Canvas>
+  </mx:VBox>	
+</s:Application>
