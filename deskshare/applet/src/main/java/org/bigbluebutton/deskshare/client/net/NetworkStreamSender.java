@@ -150,7 +150,8 @@ public class NetworkStreamSender implements NextBlockRetriever, NetworkStreamLis
 	}
 	
 	public void send(Message message) {
-		blockDataQ.offer(message);
+             boolean added = blockDataQ.offer(message);
+//             System.out.println("Offered to queue: res="+added+" size="+blockDataQ.size()+" remaining_capacity="+blockDataQ.remainingCapacity());
 	}
 	
 	public void start() {
