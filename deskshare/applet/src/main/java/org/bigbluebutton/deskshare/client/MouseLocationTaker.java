@@ -89,42 +89,56 @@ public class MouseLocationTaker {
 								
 				int mX = p.x - captureX + imgX;
 				int mY = p.y - captureY + imgY;
-				
-			//	int mX = p.x - captureX;
-			//	int mY = p.y - captureY;
-				
+								
 			//	System.out.println("imgX=[" + imgX + "," + imgY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
 				System.out.println("m=[" + mX + "," + mY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
 				
-			//	return new Point(imgX + mX, imgY + mY);
 				return new Point(mX, mY);
 			} else {
 	    		if (imgWidth > scaleWidth) {
-	    			System.out.println("Fit to width.");
+					System.out.println("Fit to width. capture=[" 
+							+ captureWidth + "," + captureHeight + "] scale=[" + scaleWidth + "," + scaleHeight + "]");
 	    			double ratio = (double)imgHeight/(double)imgWidth;
 	    			imgWidth = scaleWidth;
 	    			imgHeight = (int)((double)imgWidth * ratio);
 	    			
-					int imgX = (scaleWidth - imgWidth) / 2;
 					int imgY = (scaleHeight - imgHeight) / 2;
 					
-					int mX = p.x - captureX;
-					int mY = p.y - captureY;
-					return new Point(imgX + mX, imgY + mY);
+					double mX =  ((double)((double)p.x - (double)captureX) * (double)((double)scaleWidth / (double)captureWidth));
+					
+					System.out.println("(p.x - captureX)=[" + (p.x - captureX) + "] (scaleWidth / captureWidth)=[" 
+									+ (double)((double)scaleWidth / (double)captureWidth) + "] mX=[" + mX + "]");
+					
+					double mY = ((double)((double)p.y - (double)captureY) * (double)((double)imgHeight / (double)captureHeight)) + imgY;
+									
+				//	System.out.println("imgX=[" + imgX + "," + imgY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
+					System.out.println("m=[" + mX + "," + mY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
+					
+					return new Point((int)mX, (int)mY);
 	    		} else {
-	    			System.out.println("Fit to height.");
-	    			double hRatio = (double)scaleHeight/(double)captureHeight;
+					System.out.println("Fit to height. capture=[" + captureWidth + "," + captureHeight + "] scale=[" + scaleWidth + "," + scaleHeight + "]");
+					
+//	    			double hRatio = (double)scaleHeight/(double)captureHeight;
+//	    			imgHeight = scaleHeight;
+//	    			imgWidth = (int)((double)imgHeight * hRatio);
+	    			
+	    			double ratio = (double)imgWidth/(double)imgHeight;
 	    			imgHeight = scaleHeight;
-	    			imgWidth = (int)((double)imgHeight * hRatio);
+	    			imgWidth = (int)((double)imgHeight * ratio);
 	    			
 					int imgX = (scaleWidth - imgWidth) / 2;
-					int imgY = (scaleHeight - imgHeight) / 2;
+
+					double mX =  ((double)((double)p.x - (double)captureX) * (double)((double) imgWidth  / (double) captureWidth)) + imgX;
+				//	double mX =  ((double)((double)p.x - (double)captureX) * (double)(ratio))  + imgX ;
+					System.out.println("(p.x - captureX)=[" + (p.x - captureX) + "] ** (imgWidth  /  captureWidth)=[" 
+									+ (double)((double)imgWidth / (double) captureWidth) + "] mX=[" + mX + "]");
 					
-					double wRatio = imgWidth/captureWidth;
+					double mY = ((double)((double)p.y - (double)captureY) * (double)((double)scaleHeight / (double)captureHeight));
+									
+				//	System.out.println("imgX=[" + imgX + "," + imgY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
+					System.out.println("m=[" + mX + "," + mY + "] p=[" + p.x + "," + p.y + "] capture=[" + captureX + "," + captureY + "]");
 					
-					int mX = (int)((p.x - captureX) * wRatio);
-					int mY = (int)((p.y - captureY) * hRatio);
-					return new Point(imgX + mX, imgY + mY);
+					return new Point((int)mX, (int)mY);
 	    		}			
 			}
 		} else {
@@ -145,7 +159,7 @@ public class MouseLocationTaker {
 
 	private void takeMouseLocation() {		
 		Point mouseLocation = getMouseLocation();
-		if ( !mouseLocation.equals(oldMouseLocation) ) { //&& isMouseInsideCapturedRegion(mouseLocation)) {
+		if ( !mouseLocation.equals(oldMouseLocation) && isMouseInsideCapturedRegion(mouseLocation)) {
 			System.out.println("Mouse is inside captured region [" + mouseLocation.x + "," + mouseLocation.y + "]");
 			notifyListeners(calculatePointerLocation(mouseLocation));
 			oldMouseLocation = mouseLocation;
