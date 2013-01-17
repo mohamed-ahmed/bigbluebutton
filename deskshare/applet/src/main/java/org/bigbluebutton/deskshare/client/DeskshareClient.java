@@ -24,6 +24,8 @@ package org.bigbluebutton.deskshare.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 
+import sun.java2d.loops.ScaledBlit;
+
 public class DeskshareClient {	
 	public static final String NAME = "DESKSHARECLIENT: ";
 	
@@ -252,7 +254,7 @@ public class DeskshareClient {
     	private void calculateDimensionsToMaintainAspectRatio() {
     		if (scaleWidth > 0 && scaleHeight > 0) {
 //    			if (aspectRatio) {
-//    				recalculateScaleDimensionsToMaintainAspectRatio();
+    				recalculateScaleDimensionsToMaintainAspectRatio();
 //    			}
     		} else {
     			scaleWidth = captureWidth;
@@ -284,12 +286,20 @@ public class DeskshareClient {
     	}
     	
     	private void recalculateScaleDimensionsToMaintainAspectRatio() {
-    		if (captureWidth < captureHeight) {
-    			double ratio = (double)captureHeight/(double)captureWidth;
-    			scaleHeight = (int)((double)scaleWidth * ratio);
-    		} else {
-    			double ratio = (double)captureWidth/(double)captureHeight;
-    			scaleWidth = (int)((double)scaleHeight * ratio);
+    		if(captureWidth > scaleWidth || captureHeight > scaleHeight){
+    			if(captureHeight > captureWidth || (captureHeight == captureWidth && scaleHeight>scaleWidth) ){
+    				if(scaleHeight > captureHeight)
+    					scaleHeight = captureHeight;
+    				scaleWidth = (captureWidth * scaleHeight) / captureHeight;
+    			}else{
+    				if(scaleWidth > captureWidth)
+    					scaleWidth = captureWidth;
+    				scaleHeight = (captureHeight * scaleWidth) / captureWidth;
+    			}
+    		}
+    		else{
+    			scaleWidth = captureWidth;
+    			scaleHeight = captureHeight;
     		}
     	}    	
     	

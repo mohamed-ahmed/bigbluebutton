@@ -120,7 +120,7 @@ public class ScreenCapture {
 					
 //		System.out.println("Image=[" + image.getWidth() + "," + image.getHeight() + "] scale=[" + scaleWidth + "," + scaleHeight + "]");
 		
-		if (image.getWidth() < scaleWidth || image.getHeight() <  scaleHeight) {
+		/*if (image.getWidth() < scaleWidth || image.getHeight() <  scaleHeight) {
 			int imgWidth = image.getWidth();
 			int imgHeight = image.getHeight();
 						
@@ -144,11 +144,11 @@ public class ScreenCapture {
 	    		
 				g2.drawImage(scaledImage, (resultImage.getWidth() - imgWidth) / 2, (resultImage.getHeight() - imgHeight) / 2, imgWidth, imgHeight, null);				
 			}
-		} else {
+		} else {*/
 //			System.out.println("Both capture sides are greater than the scaled dims. Downscale image.");
 			Image scaledImage = image.getScaledInstance(scaleWidth, scaleHeight, Image.SCALE_AREA_AVERAGING);
 			g2.drawImage(scaledImage, 0, 0, scaleWidth, scaleHeight, null);	
-		}
+		//}
 
 		g2.dispose();
 		return resultImage;
