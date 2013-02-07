@@ -37,6 +37,7 @@ package org.bigbluebutton.modules.layout.services
 	import org.bigbluebutton.core.events.CoreEvent;
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.events.ModuleLoadEvent;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.modules.layout.events.ConnectionEvent;
 	import org.bigbluebutton.modules.layout.events.LayoutEvent;
 	import org.bigbluebutton.modules.layout.events.RedefineLayoutEvent;
@@ -47,6 +48,8 @@ package org.bigbluebutton.modules.layout.services
 	{
 		public static const NAME:String = "LayoutSharedObjectService";
 		
+    private static const MODULE_NAME:String = "LayoutModule";
+    
 		private var _layoutSO:SharedObject;
 		private var _connection:NetConnection;
 		private var _dispatcher:Dispatcher;
@@ -129,7 +132,20 @@ package org.bigbluebutton.modules.layout.services
 				_dispatcher.dispatchEvent(new LayoutEvent(LayoutEvent.APPLY_DEFAULT_LAYOUT_EVENT));
       
       _dispatcher.dispatchEvent(new ModuleLoadEvent(ModuleLoadEvent.LAYOUT_MODULE_STARTED));
+      
+      sendLayoutModuleReadyEvent();
 		}
+    
+    private function sendLayoutModuleReadyEvent():void {
+      
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      
+      trace("***** Sending module started event for [" + MODULE_NAME + "]");
+      
+      _dispatcher.dispatchEvent(event);
+    }
 		
 		public function lockLayout(layout:LayoutDefinition):void {
 			var nc:NetConnection = _connection;

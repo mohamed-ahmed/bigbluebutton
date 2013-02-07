@@ -34,6 +34,7 @@ package org.bigbluebutton.modules.deskshare.services.red5
 	import mx.events.MetadataEvent;
 	
 	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.modules.deskshare.events.AppletStartedEvent;
 	import org.bigbluebutton.modules.deskshare.events.CursorEvent;
 	import org.bigbluebutton.modules.deskshare.events.ViewStreamEvent;
@@ -55,6 +56,8 @@ package org.bigbluebutton.modules.deskshare.services.red5
     
     private var dispatcher:Dispatcher = new Dispatcher();    
 
+    private static const MODULE_NAME:String = "DeskShareModule";
+    
     public function Connection(room:String) {
       this.room = room;
       
@@ -249,6 +252,18 @@ package org.bigbluebutton.modules.deskshare.services.red5
       dispatcher.dispatchEvent(event);
       
       nc.call("deskshare.checkIfStreamIsPublishing", responder, room);
+      
+      sendDeskshareModuleReadyEvent();
+    }
+    
+    private function sendDeskshareModuleReadyEvent():void {      
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      
+      trace("***** Sending module started event for [" + MODULE_NAME + "]");
+      
+      dispatcher.dispatchEvent(event);
     }
     
     public function disconnect():void{

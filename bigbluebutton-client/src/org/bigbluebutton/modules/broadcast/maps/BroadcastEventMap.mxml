@@ -56,6 +56,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
   <EventHandlers type="{StreamsListLoadedEvent.STREAMS_LIST_LOADED}">
     <MethodInvoker generator="{BroadcastManager}" method="handleStreamsListLoadedEvent" />
+    <MethodInvoker generator="{BroadcastManager}" method="sendBroadcastModuleReady"/>
   </EventHandlers>
   
 	<EventHandlers type="BroadcastPlayStreamCommand">
@@ -72,7 +73,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
 	<EventHandlers type="BroadcastWhatIsTheCurrentStreamReply">
 		<MethodInvoker generator="{BroadcastManager}" method="handleWhatIsTheCurrentStreamReply" arguments="{event}"/>
-    <MethodInvoker generator="{BroadcastManager}" method="sendBroadcastModuleReady"/>
+    
 	</EventHandlers>
 
 <!--
