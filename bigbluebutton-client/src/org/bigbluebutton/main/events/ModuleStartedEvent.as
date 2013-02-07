@@ -27,7 +27,7 @@ package org.bigbluebutton.main.events
 		public var started:Boolean = false;
 		public var moduleName:String = '';
 		
-		public function ModuleStartedEvent(bubbles:Boolean=false, cancelable:Boolean=false)
+		public function ModuleStartedEvent(bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(MODULE_STARTED_EVENT, bubbles, cancelable);
 		}

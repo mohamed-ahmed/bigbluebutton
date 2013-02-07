@@ -25,6 +25,7 @@ package org.bigbluebutton.modules.chat.maps {
 	import org.bigbluebutton.common.events.CloseWindowEvent;
 	import org.bigbluebutton.common.events.OpenWindowEvent;
 	import org.bigbluebutton.core.BBB;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.modules.chat.events.ChatOptionsEvent;
 	import org.bigbluebutton.modules.chat.events.StartChatModuleEvent;
 	import org.bigbluebutton.modules.chat.model.ChatOptions;
@@ -41,7 +42,9 @@ package org.bigbluebutton.modules.chat.maps {
 		private var translationEnabled:Boolean;
 		private var translationOn:Boolean;
 		private var chatOptions:ChatOptions;
-				
+		
+    private static const MODULE_NAME:String = "ChatModule";
+    
 		public function ChatEventMapDelegate() {
 			this.dispatcher = dispatcher;
 			_chatWindow = new ChatWindow();
@@ -80,6 +83,17 @@ package org.bigbluebutton.modules.chat.maps {
 			translationEnabled = e.translationEnabled;
 			translationOn = e.translationOn;
 		}
+    
+    public function sendChatModuleReadyEvent():void {
+       
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      
+      trace("***** Sending module started event for [" + MODULE_NAME + "]");
+      
+      globalDispatcher.dispatchEvent(event);
+    }
 		
 		private function dispatchTranslationOptions():void{
 			var enableEvent:ChatOptionsEvent = new ChatOptionsEvent(ChatOptionsEvent.TRANSLATION_OPTION_ENABLED);

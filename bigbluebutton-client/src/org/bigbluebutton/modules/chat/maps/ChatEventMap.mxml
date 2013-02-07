@@ -24,13 +24,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	xmlns:mx="http://www.adobe.com/2006/mxml">
 	<mx:Script>
 		<![CDATA[
-      import com.asfusion.mate.events.Dispatcher;
-      
-      import mx.events.FlexEvent;
-      
+      import com.asfusion.mate.events.Dispatcher;     
+      import mx.events.FlexEvent;     
       import org.bigbluebutton.common.events.OpenWindowEvent;
       import org.bigbluebutton.core.EventConstants;
-      import org.bigbluebutton.main.events.ModuleStartedEvent;
       import org.bigbluebutton.modules.chat.events.ChatEvent;
       import org.bigbluebutton.modules.chat.events.ConnectionEvent;
       import org.bigbluebutton.modules.chat.events.SendPrivateChatMessageEvent;
@@ -85,6 +82,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
   
   <EventHandlers type="{TranscriptEvent.TRANSCRIPT_EVENT}" >
     <MethodInvoker generator="{ChatMessageService}" method="sendWelcomeMessage"/>
+    <MethodInvoker generator="{ChatEventMapDelegate}" method="sendChatModuleReadyEvent"/>
   </EventHandlers>      
   
   <Injectors target="{ChatMessageService}">

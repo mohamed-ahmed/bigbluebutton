@@ -72,6 +72,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
 	<EventHandlers type="BroadcastWhatIsTheCurrentStreamReply">
 		<MethodInvoker generator="{BroadcastManager}" method="handleWhatIsTheCurrentStreamReply" arguments="{event}"/>
+    <MethodInvoker generator="{BroadcastManager}" method="sendBroadcastModuleReady"/>
 	</EventHandlers>
 
 <!--

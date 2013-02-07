@@ -21,21 +21,18 @@ package org.bigbluebutton.main.model.modules
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
 	import flash.system.ApplicationDomain;
-	import flash.utils.Dictionary;
-	
+	import flash.utils.Dictionary;	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.IFlexModuleFactory;
 	import mx.events.ModuleEvent;
 	import mx.modules.ModuleLoader;
-	import mx.utils.StringUtil;
-	
+	import mx.utils.StringUtil;	
 	import org.bigbluebutton.common.IBigBlueButtonModule;
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	
-	public class ModuleDescriptor
-	{
+	public class ModuleDescriptor {
 		private var _attributes:Object;
 		private var _loader:BigBlueButtonModuleLoader;
 		private var _module:IBigBlueButtonModule;
@@ -47,9 +44,9 @@ package org.bigbluebutton.main.model.modules
 		
 		public var unresolvedDependancies:ArrayCollection;
 		public var resolved:Boolean = false;
-		
-		public function ModuleDescriptor(attributes:XML)
-		{
+		public var hasStarted:Boolean = false;
+    
+		public function ModuleDescriptor(attributes:XML) {
 			unresolvedDependancies = new ArrayCollection();
 			_attributes = new Object();
 			_loader = new BigBlueButtonModuleLoader();
@@ -92,8 +89,7 @@ package org.bigbluebutton.main.model.modules
 		private function parseAttributes(item:XML):void {
 			var attNamesList:XMLList = item.@*;
 
-			for (var i:int = 0; i < attNamesList.length(); i++)
-			{ 
+			for (var i:int = 0; i < attNamesList.length(); i++) { 
 			    var attName:String = attNamesList[i].name();
 			    var attValue:String = item.attribute(attName);
 			    _attributes[attName] = attValue;

@@ -28,6 +28,7 @@ package org.bigbluebutton.main.model.modules
 	import org.bigbluebutton.common.IBigBlueButtonModule;
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.common.Role;
+	import org.bigbluebutton.main.events.AllModulesStartedEvent;
 	import org.bigbluebutton.main.events.AppVersionEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.ConfigParameters;
@@ -161,11 +162,23 @@ package org.bigbluebutton.main.model.modules
 		}
 		
 		public function moduleStarted(name:String, started:Boolean):void {			
+      trace("ModuleManager:: Receiving *************************************[" + name + "] has started=[" + started + "]");
 			var m:ModuleDescriptor = getModule(name);
 			if (m != null) {
-				LogUtil.debug('Setting ' + name + ' started to ' + started);
+				
+        m.hasStarted = started;
 			}	
+      
+      if (allModulesStarted()) {
+        sendAllModuleStartedEvent();
+      }
 		}
+    
+    private function sendAllModuleStartedEvent():void {
+      trace("ModuleManager:: Dispatching ************************** All modules has started");
+      var dispatcher:Dispatcher = new Dispatcher();
+      dispatcher.dispatchEvent(new AllModulesStartedEvent());
+    }
 		
 		public function startUserServices():void {
 			configParameters.application = configParameters.application.replace(/rtmp:/gi, _protocol + ":");
@@ -210,6 +223,16 @@ package org.bigbluebutton.main.model.modules
 			}
 		}
 		
+    private function allModulesStarted():Boolean{
+      for (var i:int = 0; i<sorted.length; i++){
+        var m:ModuleDescriptor = sorted.getItemAt(i) as ModuleDescriptor;
+        if (!m.hasStarted){
+          return false;
+        } 
+      }
+      return true;
+    }
+    
 		private function allModulesLoaded():Boolean{
 			for (var i:int = 0; i<sorted.length; i++){
 				var m:ModuleDescriptor = sorted.getItemAt(i) as ModuleDescriptor;

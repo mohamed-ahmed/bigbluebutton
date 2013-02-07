@@ -23,6 +23,7 @@ package org.bigbluebutton.main.model.modules
 	import mx.controls.Alert;
 	
 	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.main.events.PortTestEvent;
 	import org.bigbluebutton.main.events.SuccessfulLoginEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
@@ -86,12 +87,16 @@ package org.bigbluebutton.main.model.modules
 			modulesManager.handleLogout();
 		}
 
-    public function startLayoutModule():void{
+    public function startLayoutModule():void {
       modulesManager.startLayoutModule();
     }
     
-		public function startAllModules():void{
+		public function startAllModules():void {
 			modulesManager.startAllModules();
 		}
+    
+    public function handleModuleStartedEvent(event:ModuleStartedEvent):void {
+      modulesManager.moduleStarted(event.moduleName, event.started);
+    }   
 	}
 }

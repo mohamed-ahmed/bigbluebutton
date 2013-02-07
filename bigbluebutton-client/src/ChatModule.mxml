@@ -46,7 +46,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.chat.vo.ChatMessageVO;
       import org.bigbluebutton.modules.chat.views.ChatBox;
 		
-			private var _moduleName:String = "Chat Module";			
+			private var _moduleName:String = "ChatModule";			
 			private var _attributes:Object;
 			
 			private var dispatcher:Dispatcher = new Dispatcher();

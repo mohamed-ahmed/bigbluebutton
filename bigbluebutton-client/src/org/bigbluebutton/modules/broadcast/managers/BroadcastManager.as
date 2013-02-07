@@ -18,23 +18,21 @@
  */
 package org.bigbluebutton.modules.broadcast.managers
 {
-	import com.asfusion.mate.events.Dispatcher;
-	
+	import com.asfusion.mate.events.Dispatcher;	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.media.Video;
 	import flash.net.NetConnection;
-	import flash.net.NetStream;
-	
-	import mx.core.UIComponent;
-	
+	import flash.net.NetStream;	
+	import mx.core.UIComponent;	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.common.events.OpenWindowEvent;
 	import org.bigbluebutton.core.BBB;
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.events.BBBEvent;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.modules.broadcast.models.BroadcastOptions;
 	import org.bigbluebutton.modules.broadcast.models.Stream;
 	import org.bigbluebutton.modules.broadcast.models.Streams;
@@ -48,6 +46,7 @@ package org.bigbluebutton.modules.broadcast.managers
 		private var broadcastService:BroadcastService = new BroadcastService();
 		private var streamService:StreamsService;
 		private var opt:BroadcastOptions;
+    private static const MODULE_NAME:String = "BroadcastModule";
     
 		[Bindable]
 		public var streams:Streams = new Streams();	
@@ -65,6 +64,13 @@ package org.bigbluebutton.modules.broadcast.managers
       streamService.queryAvailableStreams(opt.streamsUri);
 		}
 		
+    public function sendBroadcastModuleReady():void {
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      dispatcher.dispatchEvent(event);
+    }
+    
     public function handleStreamsListLoadedEvent():void {
       if (broadcastWindow == null){
         trace("*** BroadcastManager Opening BroadcastModule Window");
@@ -82,9 +88,7 @@ package org.bigbluebutton.modules.broadcast.managers
       } else {
         trace("***BroadcastManager Not Opening BroadcastModule Window");
       }
-      
- //     sendWhatIsTheCurrentStreamRequest();
-      
+       
       if (UserManager.getInstance().getConference().amIPresenter()) {
         handleSwitchToPresenterMode();
       } else {
