@@ -18,8 +18,7 @@
  */
 package org.bigbluebutton.main.api
 {
-  import flash.external.ExternalInterface;
-  
+  import flash.external.ExternalInterface;  
   import org.bigbluebutton.common.LogUtil;
   import org.bigbluebutton.common.Role;
   import org.bigbluebutton.core.EventConstants;
@@ -41,7 +40,6 @@ package org.bigbluebutton.main.api
   import org.bigbluebutton.main.model.users.events.BroadcastStoppedEvent;
   import org.bigbluebutton.main.model.users.events.StreamStartedEvent;
   import org.bigbluebutton.modules.videoconf.model.VideoConfOptions;
-
 
   public class ExternalApiCalls { 
     

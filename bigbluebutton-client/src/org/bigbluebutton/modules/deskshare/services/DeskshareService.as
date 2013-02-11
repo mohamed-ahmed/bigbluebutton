@@ -31,11 +31,8 @@ package org.bigbluebutton.modules.deskshare.services
 	public class DeskshareService
 	{	
 		private var conn:Connection;
-
 		private var module:DeskShareModule;
-		private var dispatcher:Dispatcher;
-		
-
+		private var dispatcher:Dispatcher;		
 		private var uri:String;
 		private var room:String;
     
@@ -56,8 +53,7 @@ package org.bigbluebutton.modules.deskshare.services
 			conn = new Connection(room);
 
 			conn.setURI(uri);
-			conn.connect();
-		
+			conn.connect();		
 		}
 			
     public function getConnection():NetConnection{

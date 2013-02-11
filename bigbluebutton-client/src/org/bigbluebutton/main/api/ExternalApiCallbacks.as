@@ -19,11 +19,7 @@
 package org.bigbluebutton.main.api
 {
   import com.asfusion.mate.events.Dispatcher;
-  
   import flash.external.ExternalInterface;
-  
-  import mx.controls.Alert;
-  
   import org.bigbluebutton.common.LogUtil;
   import org.bigbluebutton.core.EventConstants;
   import org.bigbluebutton.core.UsersUtil;

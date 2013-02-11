@@ -115,9 +115,9 @@ package org.bigbluebutton.modules.layout.managers
 					 */
 					_globalDispatcher.dispatchEvent(new LayoutEvent(LayoutEvent.APPLY_DEFAULT_LAYOUT_EVENT));
 					
-					Alert.show(ResourceUtil.getInstance().getString('bbb.layout.load.complete'), "", Alert.OK, _canvas);
+					trace(ResourceUtil.getInstance().getString('bbb.layout.load.complete'), "", Alert.OK, _canvas);
 				} else
-					Alert.show(ResourceUtil.getInstance().getString('bbb.layout.load.failed'), "", Alert.OK, _canvas);
+					trace(ResourceUtil.getInstance().getString('bbb.layout.load.failed'), "", Alert.OK, _canvas);
 			});
 			loader.loadFromLocalFile();
 		}
@@ -324,7 +324,7 @@ package org.bigbluebutton.modules.layout.managers
 				 * 	current layout doesn't get properly updated
 				 */
 				if (_eventsToDelay.indexOf(e.type) != -1) {
-					LogUtil.debug("LayoutManager: waiting the end of the animation to update the current layout");
+					trace("LayoutManager: waiting the end of the animation to update the current layout");
 					_sendCurrentLayoutUpdateTimer.reset();
 					_sendCurrentLayoutUpdateTimer.start();
 				} else {

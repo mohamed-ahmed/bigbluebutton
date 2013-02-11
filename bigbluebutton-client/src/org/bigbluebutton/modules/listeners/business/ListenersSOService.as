@@ -18,14 +18,12 @@
 */
 package org.bigbluebutton.modules.listeners.business
 {
-	import com.asfusion.mate.events.Dispatcher;
-	
+	import com.asfusion.mate.events.Dispatcher;	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.NetStatusEvent;
 	import flash.net.NetConnection;
 	import flash.net.Responder;
-	import flash.net.SharedObject;
-	
+	import flash.net.SharedObject;	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.EventConstants;
 	import org.bigbluebutton.core.UsersUtil;
@@ -55,8 +53,7 @@ package org.bigbluebutton.modules.listeners.business
 		
 		private static var globalDispatcher:Dispatcher = new Dispatcher();
 							
-		public function ListenersSOService(listeners:Listeners, module:ListenersModule)
-		{			
+		public function ListenersSOService(listeners:Listeners, module:ListenersModule) {			
 			_listeners = listeners;		
 			_module = module;			
 			dispatcher = new Dispatcher();
@@ -73,24 +70,22 @@ package org.bigbluebutton.modules.listeners.business
 		
 		private function connectionListener(connected:Boolean, errors:Array=null):void {
 			if (connected) {
-				LogUtil.debug(LOGNAME + ":Connected to the VOice application");
+				trace(LOGNAME + ":Connected to the VOice application");
 				join();
 			} else {
 				leave();
-				LogUtil.debug(LOGNAME + ":Disconnected from the Voice application");
+				trace(LOGNAME + ":Disconnected from the Voice application");
 				notifyConnectionStatusListener(false, errors);
 			}
 		}
 		
-	    private function join() : void
-		{
+    private function join():void {
 			trace("ListenertsSOService " + _module.uri);
 			_listenersSO = SharedObject.getRemote(SHARED_OBJECT, _module.uri, false);
 			_listenersSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			_listenersSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
 			_listenersSO.client = this;
 			_listenersSO.connect(_module.connection);
-			LogUtil.debug(LOGNAME + ":Voice is connected to Shared object");
 			notifyConnectionStatusListener(true);		
 				
 			// Query the server if there are already listeners in the conference.
@@ -98,8 +93,7 @@ package org.bigbluebutton.modules.listeners.business
 			getRoomMuteState();
 		}
 		
-	    private function leave():void
-	    {
+    private function leave():void {
 	    	if (_listenersSO != null) {
 	    		_listenersSO.close();
 	    	}
@@ -158,12 +152,11 @@ package org.bigbluebutton.modules.listeners.business
 					n.callerName = result[2]; /* Store the username */
 				}
 								
-				LogUtil.info(LOGNAME + "Adding listener [" + n.callerName + "," + userId + "]");
+				trace(LOGNAME + "Adding listener [" + n.callerName + "," + userId + "]");
 				_listeners.addListener(n);
 				
-//				globalDispatcher.dispatchEvent(new BBBEvent(BBBEvent.USER_VOICE_JOINED, n.callerName));
 			} else {
-				LogUtil.debug(LOGNAME + "There is a listener with userid " + userId + " " + cidName + " in the conference.");
+				trace(LOGNAME + "There is a listener with userid " + userId + " " + cidName + " in the conference.");
 			}
 		}
 
@@ -224,8 +217,7 @@ package org.bigbluebutton.modules.listeners.business
 			}					
 		}
 		
-		public function userTalk(userId:Number, talk:Boolean) : void
-		{
+		public function userTalk(userId:Number, talk:Boolean):void {
       trace("User talking event");
 			var l:Listener = _listeners.getListener(userId);			
 			if (l != null) {
@@ -242,8 +234,7 @@ package org.bigbluebutton.modules.listeners.business
 			}	
 		}
 
-		public function userLeft(userId:Number):void
-		{
+		public function userLeft(userId:Number):void {
 			_listeners.removeListener(userId);	
 			/**
 			 * Let's store the voice userid so we can do push to talk.
@@ -299,8 +290,7 @@ package org.bigbluebutton.modules.listeners.business
 			); //_netConnection.call		
 		}
 		
-		public function muteUnmuteUser(userid:Number, mute:Boolean):void
-		{
+		public function muteUnmuteUser(userid:Number, mute:Boolean):void {
 			var nc:NetConnection = _module.connection;
 			nc.call(
 				"voice.muteUnmuteUser",// Remote function name
@@ -322,8 +312,7 @@ package org.bigbluebutton.modules.listeners.business
 			); //_netConnection.call		
 		}
 
-		public function muteAllUsers(mute:Boolean):void
-		{	
+		public function muteAllUsers(mute:Boolean):void {	
 			var nc:NetConnection = _module.connection;
 			nc.call(
 				"voice.muteAllUsers",// Remote function name
@@ -345,14 +334,13 @@ package org.bigbluebutton.modules.listeners.business
 			_listenersSO.send("muteStateCallback", mute);
 		}
 		
-		public function muteStateCallback(mute:Boolean):void{
+		public function muteStateCallback(mute:Boolean):void {
 			var e:ListenersEvent = new ListenersEvent(ListenersEvent.ROOM_MUTE_STATE);
 			e.mute_state = mute;
 			dispatcher.dispatchEvent(e);
 		}
 		
-		public function ejectUser(userId:Number):void
-		{
+		public function ejectUser(userId:Number):void {
 			var nc:NetConnection = _module.connection;
 			nc.call(
 				"voice.kickUSer",// Remote function name
@@ -375,10 +363,8 @@ package org.bigbluebutton.modules.listeners.business
 		
 		private function getCurrentUsers():void {
 			var nc:NetConnection = _module.connection;
-			nc.call(
-				"voice.getMeetMeUsers",// Remote function name
+			nc.call("voice.getMeetMeUsers",
 				new Responder(
-	        		// participants - On successful result
 					function(result:Object):void { 
 						LogUtil.debug("Successfully queried participants: " + result.count); 
 						if (result.count > 0) {
@@ -400,10 +386,9 @@ package org.bigbluebutton.modules.listeners.business
 			); //_netConnection.call
 		}
 		
-		public function getRoomMuteState():void{
+		public function getRoomMuteState():void {
 			var nc:NetConnection = _module.connection;
-			nc.call(
-				"voice.isRoomMuted",// Remote function name
+			nc.call("voice.isRoomMuted",// Remote function name
 				new Responder(
 					// participants - On successful result
 					function(result:Object):void { 
@@ -431,12 +416,10 @@ package org.bigbluebutton.modules.listeners.business
 			}
 		}
 		
-		private function netStatusHandler (event:NetStatusEvent):void
-		{
+		private function netStatusHandler (event:NetStatusEvent):void {
 			var statusCode:String = event.info.code;
 			
-			switch (statusCode) 
-			{
+			switch (statusCode) {
 				case "NetConnection.Connect.Success":
 					LogUtil.debug(LOGNAME + ":Connection Success");			
 					break;
@@ -473,8 +456,7 @@ package org.bigbluebutton.modules.listeners.business
 			}
 		}
 			
-		private function asyncErrorHandler (event:AsyncErrorEvent):void
-		{
+		private function asyncErrorHandler (event:AsyncErrorEvent):void {
 			LogUtil.error(LOGNAME + "ListenersSO asynchronous error.");
 			addError("ListenersSO asynchronous error.");
 		}

@@ -23,8 +23,7 @@ package org.bigbluebutton.modules.listeners.business
 	import flash.net.Responder;
 	import org.bigbluebutton.common.LogUtil;
 		
-	public class NetConnectionDelegate
-	{
+	public class NetConnectionDelegate {
 		public static const NAME:String = "ListenerNC";
 		private static const LOGNAME:String = "[ListenerNC]";
 		
@@ -35,8 +34,7 @@ package org.bigbluebutton.modules.listeners.business
 		private var _connectionListener:Function;
 		private var _connectionError:Array;
 				
-		public function NetConnectionDelegate(uri:String, connectionListener:Function) : void
-		{
+		public function NetConnectionDelegate(uri:String, connectionListener:Function):void {
 			_netConnection = new NetConnection();
 			_uri = uri;
 			_connectionListener = connectionListener;
@@ -46,8 +44,7 @@ package org.bigbluebutton.modules.listeners.business
 			return _netConnection;
 		}
 		
-		public function connect() : void
-		{					
+		public function connect():void {					
 			_netConnection.client = this;
 			_netConnection.addEventListener( NetStatusEvent.NET_STATUS, netStatus );
 			_netConnection.addEventListener( AsyncErrorEvent.ASYNC_ERROR, netASyncError );
@@ -61,8 +58,7 @@ package org.bigbluebutton.modules.listeners.business
 				
 			} catch( e : ArgumentError ) {
 				// Invalid parameters.
-				switch ( e.errorID ) 
-				{
+				switch ( e.errorID )  {
 					case 2004 :						
 						LogUtil.error(LOGNAME + "Error! Invalid server location: " + _uri);											   
 						break;						
@@ -72,26 +68,22 @@ package org.bigbluebutton.modules.listeners.business
 			}	
 		}
 			
-		public function disconnect() : void
-		{
+		public function disconnect():void {
 			_netConnection.close();
 		}
 
-		public function muteAllUsers(mute:Boolean):void 
-		{
+		public function muteAllUsers(mute:Boolean):void {
 			LogUtil.info(LOGNAME + "Muting all listeners [" + mute + "]");
 			_netConnection.call("meetmeService.muteAllUsers", null, mute);
 		}
 		
-		public function muteUnmuteUser(userid:Number, mute:Boolean):void
-		{
+		public function muteUnmuteUser(userid:Number, mute:Boolean):void {
 			LogUtil.info(LOGNAME + "Muting listener [" + userid + "," + mute + "]");
 			_netConnection.call("meetmeService.muteUnmuteUser", null, userid, mute);
 		}
 
 
-		public function ejectUser(userid:Number) : void
-		{
+		public function ejectUser(userid:Number):void {
 			LogUtil.info(LOGNAME + "Ejecting listener [" + userid + "]");
 			_netConnection.call("meetmeService.ejectUser", null, userid);
 		}		
@@ -101,17 +93,15 @@ package org.bigbluebutton.modules.listeners.business
 			_netConnection.call("meetmeService.getMeetMeUsers", resp);
 		}
 					
-		protected function netStatus( event : NetStatusEvent ) : void 
-		{
+		protected function netStatus( event : NetStatusEvent ):void {
 			handleResult(event);
 		}
 		
-		public function handleResult(  event : Object  ) : void {
+		public function handleResult(event:Object):void {
 			var info:Object = event.info;
 			var statusCode:String = info.code;
 			
-			switch ( statusCode ) 
-			{
+			switch (statusCode) {
 				case "NetConnection.Connect.Success" :
 					LogUtil.info(LOGNAME + "Connection to voice application succeeded.");
 					_connectionListener(true);					
@@ -150,13 +140,12 @@ package org.bigbluebutton.modules.listeners.business
 		}
 		
 			
-		protected function netSecurityError( event : SecurityErrorEvent ) : void 
-		{
+		protected function netSecurityError(event:SecurityErrorEvent):void  {
 			LogUtil.error(LOGNAME + "Encountered security error on connection to the application.");
 			addError("Encountered security error on connection to the application.");
 		}
 		
-		protected function netIOError( event : IOErrorEvent ) : void 
+		protected function netIOError(event : IOErrorEvent ) : void 
 		{
 			LogUtil.error(LOGNAME + "Encountered Input/Output error on connection to the application.");
 			addError("Encountered Input/Output error on connection to the application.");
