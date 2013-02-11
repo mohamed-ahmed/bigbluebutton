@@ -28,11 +28,14 @@ package org.bigbluebutton.modules.notes.services
   import flash.net.URLRequest;
   import flash.net.URLRequestMethod;
   import flash.net.URLVariables;
-  import flash.utils.ByteArray;  
+  import flash.utils.ByteArray;
+  
   import mx.collections.ArrayCollection;
   import mx.utils.Base64Decoder;
-  import mx.utils.Base64Encoder; 
+  import mx.utils.Base64Encoder;
+  
   import org.bigbluebutton.core.UsersUtil;
+  import org.bigbluebutton.main.events.ModuleStartedEvent;
   import org.bigbluebutton.modules.notes.events.RetrieveNotesErrorEvent;
   import org.bigbluebutton.modules.notes.events.RetrieveNotesSuccessEvent;
   import org.bigbluebutton.modules.notes.events.SaveErrorEvent;
@@ -40,8 +43,7 @@ package org.bigbluebutton.modules.notes.services
   import org.bigbluebutton.modules.notes.models.Note;
   import org.bigbluebutton.modules.notes.models.NotesOptions;
   
-  public class RetrieveNotesService
-  {
+  public class RetrieveNotesService {
     private var _options:NotesOptions;
     private var _request:URLRequest = new URLRequest();
     private var _vars:URLVariables;
@@ -78,8 +80,7 @@ package org.bigbluebutton.modules.notes.services
         trace("Unable to load requested document.");
         var errorEvent:RetrieveNotesErrorEvent = new RetrieveNotesErrorEvent();
         _dispatcher.dispatchEvent(errorEvent);
-      }
-      
+      }      
     }
     
     private function base64Encode(data:String):String {
@@ -91,11 +92,24 @@ package org.bigbluebutton.modules.notes.services
     private function completeHandler(event:Event):void {
       var xml:XML = new XML(event.target.data)
       var notes:ArrayCollection = parseNotes(xml);
-//      if (notes.length > 0) {
-        var successEvent:RetrieveNotesSuccessEvent = new RetrieveNotesSuccessEvent();
-        successEvent.notes = notes;
-        _dispatcher.dispatchEvent(successEvent);        
-//      }    
+      var successEvent:RetrieveNotesSuccessEvent = new RetrieveNotesSuccessEvent();
+      successEvent.notes = notes;
+      _dispatcher.dispatchEvent(successEvent);
+      
+      sendDeskshareModuleReadyEvent();
+    }
+    
+    
+    private static const MODULE_NAME:String = "NotesModule";
+    
+    private function sendDeskshareModuleReadyEvent():void {      
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      
+      trace("***** Sending module started event for [" + MODULE_NAME + "]");
+      
+      _dispatcher.dispatchEvent(event);
     }
     
     private function parseNotes(xml:XML):ArrayCollection {
@@ -146,7 +160,5 @@ package org.bigbluebutton.modules.notes.services
       var errorEvent:RetrieveNotesErrorEvent = new RetrieveNotesErrorEvent();
       _dispatcher.dispatchEvent(errorEvent);
     }
-    
-
   }
 }
