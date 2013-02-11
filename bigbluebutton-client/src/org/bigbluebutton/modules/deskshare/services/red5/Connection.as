@@ -19,8 +19,7 @@
 
 package org.bigbluebutton.modules.deskshare.services.red5
 {
-	import com.asfusion.mate.events.Dispatcher;
-	
+	import com.asfusion.mate.events.Dispatcher;	
 	import flash.events.EventDispatcher;
 	import flash.events.NetStatusEvent;
 	import flash.events.SecurityErrorEvent;
@@ -29,10 +28,8 @@ package org.bigbluebutton.modules.deskshare.services.red5
 	import flash.net.ObjectEncoding;
 	import flash.net.Responder;
 	import flash.net.SharedObject;
-	import flash.utils.Timer;
-	
-	import mx.events.MetadataEvent;
-	
+	import flash.utils.Timer;	
+	import mx.events.MetadataEvent;	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.modules.deskshare.events.AppletStartedEvent;
@@ -110,7 +107,6 @@ package org.bigbluebutton.modules.deskshare.services.red5
         
         dispatcher.dispatchEvent(ce);        
       }
-
       
 			nc.connect(getURI());
       

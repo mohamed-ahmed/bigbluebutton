@@ -18,25 +18,27 @@
 */
 package org.bigbluebutton.modules.listeners.business
 {
-	import com.asfusion.mate.events.Dispatcher;	
+	import com.asfusion.mate.events.Dispatcher;
+	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.NetStatusEvent;
 	import flash.net.NetConnection;
 	import flash.net.Responder;
-	import flash.net.SharedObject;	
+	import flash.net.SharedObject;
+	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.EventConstants;
 	import org.bigbluebutton.core.UsersUtil;
 	import org.bigbluebutton.core.events.CoreEvent;
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.events.BBBEvent;
+	import org.bigbluebutton.main.events.ModuleStartedEvent;
 	import org.bigbluebutton.main.model.users.BBBUser;
 	import org.bigbluebutton.modules.listeners.business.vo.Listener;
 	import org.bigbluebutton.modules.listeners.business.vo.Listeners;
 	import org.bigbluebutton.modules.listeners.events.ListenersEvent;
 
-	public class ListenersSOService
-	{
+	public class ListenersSOService {
 		private static const LOGNAME:String = "[ListenersSOService]";		
 		private var _listenersSO : SharedObject;
 		private static const SHARED_OBJECT:String = "meetMeUsersSO";		
@@ -50,7 +52,8 @@ package org.bigbluebutton.modules.listeners.business
 		private var pingCount:int = 0;
 		private var _module:ListenersModule;
 		private var dispatcher:Dispatcher;
-		
+		private static const MODULE_NAME:String = "ListenersModule";
+    
 		private static var globalDispatcher:Dispatcher = new Dispatcher();
 							
 		public function ListenersSOService(listeners:Listeners, module:ListenersModule) {			
@@ -375,17 +378,28 @@ package org.bigbluebutton.modules.listeners.business
 							}							
 						}	
 					},	
-					// status - On error occurred
 					function(status:Object):void { 
 						LogUtil.error("Error occurred:"); 
 						for (var x:Object in status) { 
 							LogUtil.error(x + " : " + status[x]); 
 							} 
 					}
-				)//new Responder
-			); //_netConnection.call
+				)
+			); 
+      
+      sendDeskshareModuleReadyEvent();
 		}
 		
+    private function sendDeskshareModuleReadyEvent():void {      
+      var event:ModuleStartedEvent = new ModuleStartedEvent();
+      event.moduleName = MODULE_NAME;
+      event.started = true;
+      
+      trace("***** Sending module started event for [" + MODULE_NAME + "]");
+      
+      dispatcher.dispatchEvent(event);
+    }
+    
 		public function getRoomMuteState():void {
 			var nc:NetConnection = _module.connection;
 			nc.call("voice.isRoomMuted",// Remote function name

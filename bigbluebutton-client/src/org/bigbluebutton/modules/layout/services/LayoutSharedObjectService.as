@@ -19,7 +19,6 @@
 package org.bigbluebutton.modules.layout.services
 {
 	import com.asfusion.mate.events.Dispatcher;
-	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.IEventDispatcher;
 	import flash.events.NetStatusEvent;
@@ -29,9 +28,6 @@ package org.bigbluebutton.modules.layout.services
 	import flash.net.Responder;
 	import flash.net.SharedObject;
 	import flash.utils.Timer;
-	
-	import mx.controls.Alert;
-	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.EventConstants;
 	import org.bigbluebutton.core.events.CoreEvent;
@@ -44,8 +40,7 @@ package org.bigbluebutton.modules.layout.services
 	import org.bigbluebutton.modules.layout.model.LayoutDefinition;
 	import org.bigbluebutton.util.i18n.ResourceUtil;
 
-	public class LayoutSharedObjectService
-	{
+	public class LayoutSharedObjectService {
 		public static const NAME:String = "LayoutSharedObjectService";
 		
     private static const MODULE_NAME:String = "LayoutModule";
@@ -60,14 +55,12 @@ package org.bigbluebutton.modules.layout.services
 		 */
 		private var _applyFirstLayoutTimer:Timer = new Timer(750,1);
 		
-		public function LayoutSharedObjectService(connection:NetConnection)
-		{
+		public function LayoutSharedObjectService(connection:NetConnection) {
 			_connection = connection;
 			_dispatcher = new Dispatcher();
 		}
 						
-	    public function join(uri:String):void
-		{
+    public function join(uri:String):void {
 			_layoutSO = SharedObject.getRemote("layoutSO", uri, false);
 			_layoutSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			_layoutSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
@@ -76,20 +69,17 @@ package org.bigbluebutton.modules.layout.services
 			_layoutSO.connect(_connection);					
 		}
 		
-	    public function leave():void
-	    {
+    public function leave():void {
 	    	if (_layoutSO != null) {
 	    		_layoutSO.close();
 	    	}
 	    }
 
-		private function netStatusHandler(event:NetStatusEvent):void
-		{
+		private function netStatusHandler(event:NetStatusEvent):void {
 			var statusCode:String = event.info.code;
 			var connEvent:ConnectionEvent = new ConnectionEvent(ConnectionEvent.CONNECT_EVENT);
 			
-			switch ( statusCode ) 
-			{
+			switch (statusCode) {
 				case "NetConnection.Connect.Success":
 					connEvent.success = true;
 					break;
@@ -102,8 +92,7 @@ package org.bigbluebutton.modules.layout.services
 		
 		public function initLayout():void {
 			var nc:NetConnection = _connection;
-			nc.call(
-				"layout.init",
+			nc.call("layout.init",
 				new Responder(
 					function(result:Object):void {
 						_applyFirstLayoutTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {

@@ -145,14 +145,12 @@ package org.bigbluebutton.modules.listeners.business
 			addError("Encountered security error on connection to the application.");
 		}
 		
-		protected function netIOError(event : IOErrorEvent ) : void 
-		{
+		protected function netIOError(event : IOErrorEvent):void {
 			LogUtil.error(LOGNAME + "Encountered Input/Output error on connection to the application.");
 			addError("Encountered Input/Output error on connection to the application.");
 		}
 			
-		protected function netASyncError( event : AsyncErrorEvent ) : void 
-		{
+		protected function netASyncError(event:AsyncErrorEvent):void {
 			LogUtil.error(LOGNAME + "Encountered Asynchronous error on connection to the application.");
 			addError("Encountered Asynchronous error on connection to the application.");
 		}	
