@@ -6,7 +6,7 @@ public class PublicChatHistoryQuery extends AbstractMessageIn {
 
 	public final String userID;
 	
-	public PublicChatHistoryQuery(String meetingID,String userID) {
+	public PublicChatHistoryQuery(String meetingID, String userID) {
 		super(meetingID);
 		this.userID = userID;
 	}

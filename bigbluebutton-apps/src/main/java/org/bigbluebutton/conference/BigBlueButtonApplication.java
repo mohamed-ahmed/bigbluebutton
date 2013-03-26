@@ -20,31 +20,23 @@ package org.bigbluebutton.conference;
 
 import java.util.Iterator;
 import java.util.Set;
-import org.red5.server.api.Red5;import org.bigbluebutton.conference.messages.in.meetings.AllMeetingsStop;
-import org.bigbluebutton.conference.messages.in.meetings.MeetingEnd;
-import org.bigbluebutton.conference.messages.in.meetings.MeetingStart;
-import org.bigbluebutton.conference.messages.in.meetings.MeetingStopped;
-import org.bigbluebutton.conference.messages.in.users.UserJoin;
+import org.red5.server.api.Red5;
 import org.bigbluebutton.conference.service.recorder.RecorderApplication;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.adapter.IApplication;
 import org.red5.server.adapter.MultiThreadedApplicationAdapter;
 import org.red5.server.api.IClient;
 import org.red5.server.api.IConnection;
-import org.red5.server.api.IContext;
 import org.red5.server.api.scope.IScope;
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.support.AbstractApplicationContext;
+
 
 public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 	private static Logger log = Red5LoggerFactory.getLogger(BigBlueButtonApplication.class, "bigbluebutton");
 
 	private RecorderApplication recorderApplication;
-	private AbstractApplicationContext appCtx;
 	private ConnectionInvokerService connInvokerService;
-	private BigBlueButton bbb;
+	private BigBlueButtonMain bbb;
 	
 	private static final String APP = "BBB";
 	
@@ -116,8 +108,7 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 		log.debug("***** " + APP + " [ " + " roomStop [ " + scope.getName() + "] *********");
 		String meetingID = scope.getName();
 		
-    	MeetingStopped message = new MeetingStopped(meetingID);
-    	bbb.accept(message);
+    	bbb.stopMeeting(meetingID);
     	
 		recorderApplication.destroyRecordSession(meetingID);
 		connInvokerService.removeScope(meetingID);
@@ -148,19 +139,17 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 		}
 			
 
-    	BigBlueButtonSession bbbSession = new BigBlueButtonSession(meetingID, internalUserID,  username, role, 
-    			voiceBridge, record, externalUserID);
+    	BigBlueButtonSession bbbSession = new BigBlueButtonSession(meetingID, internalUserID,  username, role, voiceBridge, record, externalUserID);
         connection.setAttribute(Constants.SESSION, bbbSession);        
         
-		MeetingStart message = new MeetingStart(meetingID, voiceBridge, record);
+		bbb.starMeeting(meetingID, voiceBridge, record);
 		
-		bbb.accept(message);
+		bbb.userJoin(meetingID, internalUserID, externalUserID, username, role);
 		
-		UserJoin userJoin = new UserJoin(meetingID, internalUserID, externalUserID, username, role);
+		String connID = meetingID + "-" + bbbSession.getInternalUserID();
 		
-		bbb.accept(userJoin);
-		
-        connInvokerService.addConnection(bbbSession.getInternalUserID(), connection);
+		UserConnection userConn = new UserConnection(connID, connection);
+        connInvokerService.addConnection(connID, userConn);
         
         return super.roomConnect(connection, params);
         
@@ -169,16 +158,16 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 	@Override
 	public void roomDisconnect(IConnection conn) {
 		log.debug("***** " + APP + " [ " + " roomDisconnect [ " + conn.getScope().getName() + "] *********");
-		
-        String remoteHost = Red5.getConnectionLocal().getRemoteAddress();
-        int remotePort = Red5.getConnectionLocal().getRemotePort();    	
-        String clientId = Red5.getConnectionLocal().getClient().getId();
-    	log.info("***** " + APP + "[clientid=" + clientId + "] disconnnected from " + remoteHost + ":" + remotePort + ".");
+		   	
+    	String userID = getBbbSession().getInternalUserID();
+    	String meetingID = conn.getScope().getName();
     	
-    	connInvokerService.removeConnection(getBbbSession().getInternalUserID());
+    	String connID = meetingID + "-" + userID;
     	
-		BigBlueButtonSession bbbSession = (BigBlueButtonSession) Red5.getConnectionLocal().getAttribute(Constants.SESSION);
-		log.info("User [" + bbbSession.getUsername() + "] disconnected from room [" + bbbSession.getRoom() +"]");
+    	connInvokerService.removeConnection(connID);
+    	
+    	bbb.userLeft(meetingID, userID);
+    	
 		super.roomDisconnect(conn);
 	}
 	
@@ -207,7 +196,7 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 		this.connInvokerService = connInvokerService;
 	}
 	
-	public void setBigBlueButton(BigBlueButton bbb) {
+	public void setBigBlueButtonMain(BigBlueButtonMain bbb) {
 		this.bbb = bbb;
 	}
 

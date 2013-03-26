@@ -25,8 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.red5.server.api.IConnection;
 import org.red5.server.api.scope.IScope;
 import org.red5.server.api.service.ServiceUtils;
 
@@ -37,7 +35,7 @@ public class ConnectionInvokerService implements IConnectionInvokerService {
 			
 	private BlockingQueue<ClientMessage> messages;
 	
-	private ConcurrentHashMap<String, IConnection> connections;
+	private ConcurrentHashMap<String, UserConnection> connections;
 	private ConcurrentHashMap<String, IScope> scopes;
 	
 	private volatile boolean sendMessages = false;
@@ -45,11 +43,11 @@ public class ConnectionInvokerService implements IConnectionInvokerService {
 	public ConnectionInvokerService() {
 		messages = new LinkedBlockingQueue<ClientMessage>();
 
-		connections = new ConcurrentHashMap<String, IConnection>();
+		connections = new ConcurrentHashMap<String, UserConnection>();
 		scopes = new ConcurrentHashMap<String, IScope>();
 	}
 	
-	public void addConnection(String id, IConnection conn) {
+	public void addConnection(String id, UserConnection conn) {
 		if (connections == null) {
 			System.out.println("Connections is null!!!!");
 			return;
@@ -114,13 +112,13 @@ public class ConnectionInvokerService implements IConnectionInvokerService {
 				ServiceUtils.invokeOnAllScopeConnections(scope, "onMessageFromServer", params.toArray(), null);				
 			}
 		} else if (message.getType().equals(ClientMessage.DIRECT)) {
-			IConnection conn = connections.get(message.getDest());
-			if (conn != null) {
-				if (conn.isConnected()) {
+			UserConnection userConn = connections.get(message.getDest());
+			if (userConn != null) {
+				if (userConn.conn.isConnected()) {
 					List<Object> params = new ArrayList<Object>();
 					params.add(message.getMessageName());
 					params.add(message.getMessage());
-					ServiceUtils.invokeOnConnection(conn, "onMessageFromServer", params.toArray());
+					ServiceUtils.invokeOnConnection(userConn.conn, "onMessageFromServer", params.toArray());
 				}
 			}
 		}
