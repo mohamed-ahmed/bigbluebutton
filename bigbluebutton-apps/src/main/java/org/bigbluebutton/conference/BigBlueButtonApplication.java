@@ -23,6 +23,8 @@ import java.util.Set;
 import org.red5.server.api.Red5;import org.bigbluebutton.conference.messages.in.meetings.AllMeetingsStop;
 import org.bigbluebutton.conference.messages.in.meetings.MeetingEnd;
 import org.bigbluebutton.conference.messages.in.meetings.MeetingStart;
+import org.bigbluebutton.conference.messages.in.meetings.MeetingStopped;
+import org.bigbluebutton.conference.messages.in.users.UserJoin;
 import org.bigbluebutton.conference.service.recorder.RecorderApplication;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.adapter.IApplication;
@@ -42,6 +44,7 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 	private RecorderApplication recorderApplication;
 	private AbstractApplicationContext appCtx;
 	private ConnectionInvokerService connInvokerService;
+	private BigBlueButton bbb;
 	
 	private static final String APP = "BBB";
 	
@@ -85,11 +88,6 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 	@Override
     public boolean appStart(IScope app) {
 		log.debug("***** " + APP + " [ " + " appStart [ " + scope.getName() + "] *********");
-        IContext context = app.getContext();
-        appCtx = (AbstractApplicationContext) context.getApplicationContext();
-        appCtx.addApplicationListener(new ShutdownHookListener());
-        appCtx.registerShutdownHook();
-        super.appStart(app);
         
         connInvokerService.start();
         
@@ -113,15 +111,18 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
     }	
 	
 	@Override
-    public void roomStop(IScope room) {
+    public void roomStop(IScope scope) {
 
 		log.debug("***** " + APP + " [ " + " roomStop [ " + scope.getName() + "] *********");
+		String meetingID = scope.getName();
 		
-    	participantsApplication.destroyRoom(room.getName());
-		recorderApplication.destroyRecordSession(room.getName());
-		connInvokerService.removeScope(room.getName());
+    	MeetingStopped message = new MeetingStopped(meetingID);
+    	bbb.accept(message);
+    	
+		recorderApplication.destroyRecordSession(meetingID);
+		connInvokerService.removeScope(meetingID);
 		
-		super.roomStop(room);
+		super.roomStop(scope);
 
     }
     	
@@ -132,7 +133,7 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
         String username = ((String) params[0]).toString();
         String role = ((String) params[1]).toString();
 
-        String room = ((String)params[2]).toString();
+        String meetingID = ((String)params[2]).toString();
                
         String voiceBridge = ((String) params[3]).toString();
 		
@@ -143,20 +144,22 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 
     	    	
 		if (record == true) {
-			recorderApplication.createRecordSession(room);
+			recorderApplication.createRecordSession(meetingID);
 		}
 			
 
-    	BigBlueButtonSession bbbSession = new BigBlueButtonSession(room, internalUserID,  username, role, 
+    	BigBlueButtonSession bbbSession = new BigBlueButtonSession(meetingID, internalUserID,  username, role, 
     			voiceBridge, record, externalUserID);
         connection.setAttribute(Constants.SESSION, bbbSession);        
         
-        String debugInfo = "internalUserID=" + internalUserID + ",username=" + username + ",role=" +  role + "," + 
-        					",voiceConf=" + voiceBridge + ",room=" + room + ",externalUserid=" + externalUserID;
-		log.debug("User [{}] connected to room [{}]", debugInfo, room); 
-		participantsApplication.createRoom(room);
+		MeetingStart message = new MeetingStart(meetingID, voiceBridge, record);
 		
-
+		bbb.accept(message);
+		
+		UserJoin userJoin = new UserJoin(meetingID, internalUserID, externalUserID, username, role);
+		
+		bbb.accept(userJoin);
+		
         connInvokerService.addConnection(bbbSession.getInternalUserID(), connection);
         
         return super.roomConnect(connection, params);
@@ -204,5 +207,8 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 		this.connInvokerService = connInvokerService;
 	}
 	
+	public void setBigBlueButton(BigBlueButton bbb) {
+		this.bbb = bbb;
+	}
 
 }
