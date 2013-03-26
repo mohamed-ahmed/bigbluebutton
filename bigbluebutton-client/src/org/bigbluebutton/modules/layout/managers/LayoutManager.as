@@ -1,26 +1,24 @@
 /**
- * BigBlueButton open source conferencing system - http://www.bigbluebutton.org/
- *
- * Copyright (c) 2012 BigBlueButton Inc. and by respective authors (see below).
- *
- * This program is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation; either version 2.1 of the License, or (at your option) any later
- * version.
- *
- * BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along
- * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
- * 
- * Author: Felipe Cecagno <felipe@mconf.org>
- */
+* BigBlueButton open source conferencing system - http://www.bigbluebutton.org/
+* 
+* Copyright (c) 2012 BigBlueButton Inc. and by respective authors (see below).
+*
+* This program is free software; you can redistribute it and/or modify it under the
+* terms of the GNU Lesser General Public License as published by the Free Software
+* Foundation; either version 3.0 of the License, or (at your option) any later
+* version.
+* 
+* BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+* PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License along
+* with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
+*
+*/
 package org.bigbluebutton.modules.layout.managers
 {
-  import com.asfusion.mate.events.Dispatcher;
-  
+  import com.asfusion.mate.events.Dispatcher; 
   import flash.events.Event;
   import flash.events.EventDispatcher;
   import flash.events.TimerEvent;
@@ -28,17 +26,15 @@ package org.bigbluebutton.modules.layout.managers
   import flash.net.URLLoader;
   import flash.net.URLRequest;
   import flash.utils.Dictionary;
-  import flash.utils.Timer;
-  
+  import flash.utils.Timer;  
   import flexlib.mdi.containers.MDICanvas;
   import flexlib.mdi.containers.MDIWindow;
-  import flexlib.mdi.events.MDIManagerEvent;
-  
+  import flexlib.mdi.events.MDIManagerEvent;  
   import mx.controls.Alert;
-  import mx.events.ResizeEvent;
-  
+  import mx.events.ResizeEvent;  
   import org.bigbluebutton.common.LogUtil;
   import org.bigbluebutton.core.EventBroadcaster;
+  import org.bigbluebutton.core.events.SwitchedLayoutEvent;
   import org.bigbluebutton.core.managers.UserManager;
   import org.bigbluebutton.core.model.Config;
   import org.bigbluebutton.main.events.ModuleLoadEvent;
@@ -53,29 +49,59 @@ package org.bigbluebutton.modules.layout.managers
   import org.bigbluebutton.modules.layout.model.WindowLayout;
   import org.bigbluebutton.util.i18n.ResourceUtil;
 
-  public class LayoutManager extends EventDispatcher {
-    private var _layouts:LayoutDefinitionFile = null;
-    private var _canvas:MDICanvas = null;
-    private var _globalDispatcher:Dispatcher = new Dispatcher();
-    private var _locked:Boolean = false;
-    private var _currentLayout:LayoutDefinition = null;
-    private var _detectContainerChange:Boolean = true;
-    private var _containerDeactivated:Boolean = false;
-    private var _sendCurrentLayoutUpdateTimer:Timer = new Timer(500,1);
-    private var _applyCurrentLayoutTimer:Timer = new Timer(150,1);
-    private var _customLayoutsCount:int = 0;
-    private var _eventsToDelay:Array = new Array(MDIManagerEvent.WINDOW_RESTORE,
-                                                  MDIManagerEvent.WINDOW_MINIMIZE,
-                                                  MDIManagerEvent.WINDOW_MAXIMIZE);
-
-    public function LayoutManager() {
-      _applyCurrentLayoutTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
-                  applyLayout(_currentLayout);
-              });
-      _sendCurrentLayoutUpdateTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
-                  sendLayoutUpdate(updateCurrentLayout());
-              });
-    }
+	public class LayoutManager extends EventDispatcher {
+		private var _layouts:LayoutDefinitionFile = null;
+		private var _canvas:MDICanvas = null;
+		private var _globalDispatcher:Dispatcher = new Dispatcher();
+		private var _locked:Boolean = false;
+		private var _currentLayout:LayoutDefinition = null;
+		private var _detectContainerChange:Boolean = true;
+		private var _containerDeactivated:Boolean = false;
+		private var _sendCurrentLayoutUpdateTimer:Timer = new Timer(500,1);
+		private var _applyCurrentLayoutTimer:Timer = new Timer(150,1);
+		private var _delayToSendLayoutsToCombobox:Timer = new Timer(60,0);
+		private var _customLayoutsCount:int = 0;
+		private var comboboxIsInitialized:Boolean = false;
+		private var _eventsToDelay:Array = new Array(MDIManagerEvent.WINDOW_RESTORE,
+				MDIManagerEvent.WINDOW_MINIMIZE,
+				MDIManagerEvent.WINDOW_MAXIMIZE);
+		
+		
+		public function LayoutManager() {
+			_applyCurrentLayoutTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
+				applyLayout(_currentLayout);
+			});
+			_sendCurrentLayoutUpdateTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
+				sendLayoutUpdate(updateCurrentLayout());
+			});
+			
+			_delayToSendLayoutsToCombobox.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
+				checkIfCanSendLayoutToCombobox();
+			});
+		}
+		
+		
+		public function sendPopulateComboboxEvent():void {
+			LogUtil.debug("Sending layout to populate combobox");
+			var sendLayoutsLoaded:LayoutsLoadedEvent = new LayoutsLoadedEvent(LayoutsLoadedEvent.SEND_LAYOUTS_LOADED_EVENT );
+		    	sendLayoutsLoaded.layouts = _layouts;
+			_globalDispatcher.dispatchEvent(sendLayoutsLoaded);
+		}
+		
+		
+		public function initDelayTimerUntilComboboxIsInitialized():void {
+			_delayToSendLayoutsToCombobox.start();
+		}
+		
+		
+		public function checkIfCanSendLayoutToCombobox():void {
+			if(comboboxIsInitialized) {
+				if(_delayToSendLayoutsToCombobox != null) {
+					_delayToSendLayoutsToCombobox.stop();
+				}
+				sendPopulateComboboxEvent();
+			}
+		}
 		
 		public function loadServerLayouts(layoutUrl:String):void {
 			LogUtil.debug("LayoutManager: loading server layouts from " + layoutUrl);
@@ -83,14 +109,22 @@ package org.bigbluebutton.modules.layout.managers
 			loader.addEventListener(LayoutsLoadedEvent.LAYOUTS_LOADED_EVENT, function(e:LayoutsLoadedEvent):void {
 				if (e.success) {
 					_layouts = e.layouts;
+					if(comboboxIsInitialized) {
+						sendPopulateComboboxEvent();
+					}
+					else {
+						initDelayTimerUntilComboboxIsInitialized();
+					}
 					LogUtil.debug("LayoutManager: layouts loaded successfully");
-          
-          
 				} else {
 					LogUtil.error("LayoutManager: layouts not loaded (" + e.error.message + ")");
 				}
 			});
 			loader.loadFromUrl(layoutUrl);
+		}
+		
+		public function comboboxInitialized():void {
+			comboboxIsInitialized = true;
 		}
 		
 		public function saveLayoutsToFile():void {
@@ -110,13 +144,15 @@ package org.bigbluebutton.modules.layout.managers
 					/*
 					 * \TODO why do I need to create a new Event for this?
 					 */
-					var layoutsLoaded:LayoutsLoadedEvent = new LayoutsLoadedEvent();
-					layoutsLoaded.layouts = _layouts;
-					_globalDispatcher.dispatchEvent(layoutsLoaded);
+					//var layoutsLoaded:LayoutsLoadedEvent = new LayoutsLoadedEvent();
+					//layoutsLoaded.layouts = _layouts;
+					//_globalDispatcher.dispatchEvent(layoutsLoaded);
 					/*
 					 *	it will update the ComboBox label, and will go back to this class
 					 * 	to apply the default layout
 					 */
+					 
+					 sendPopulateComboboxEvent();
 					_globalDispatcher.dispatchEvent(new LayoutEvent(LayoutEvent.APPLY_DEFAULT_LAYOUT_EVENT));
 					
 					Alert.show(ResourceUtil.getInstance().getString('bbb.layout.load.complete'), "", Alert.OK, _canvas);
@@ -195,23 +231,46 @@ package org.bigbluebutton.modules.layout.managers
       var newLayout:LayoutDefinition = _layouts.getLayout(name);
       if (newLayout == null) return;
 
-      LogUtil.debug("************** USING [" + newLayout.name + "] LAYOUT ***************************");
+      trace("************** USING [" + newLayout.name + "] as new LAYOUT ***************************");
       applyLayout(newLayout);
-      sendLayoutUpdate(_currentLayout);      
+      sendLayoutUpdate(_currentLayout);     
+      
     }
     
-		public function applyDefaultLayout():void {      
+		public function applyDefaultLayout():void {   
+      
       var layoutOptions:LayoutOptions = new LayoutOptions();
       layoutOptions.parseOptions();
       var defaultLayout:LayoutDefinition = _layouts.getLayout(layoutOptions.defaultLayout);
+           
+      var sessionDefaulLayout:String = UserManager.getInstance().getConference().getDefaultLayout();
+            
+      if (sessionDefaulLayout != "NOLAYOUT") {
+        var sesLayout:LayoutDefinition = _layouts.getLayout(sessionDefaulLayout);
+        if (sesLayout != null) {
+          defaultLayout = sesLayout;
+        }
+      }
+      
       if (defaultLayout == null) {
         defaultLayout = _layouts.getDefault();
       }
-      LogUtil.debug("************** USING [" + defaultLayout.name + "] LAYOUT ***************************");
+      
+      trace("************** USING [" + defaultLayout.name + "] as default LAYOUT ***************************");
 			applyLayout(defaultLayout);
 			sendLayoutUpdate(_currentLayout);
+
 		}
 		
+    private function dispatchSwitchedLayoutEvent(layoutID:String):void {
+      if (_currentLayout != null && _currentLayout.name == layoutID) return;
+      
+      trace("************** DISPATCHING [" + layoutID + "] as new LAYOUT ***************************");
+      var layoutEvent:SwitchedLayoutEvent = new SwitchedLayoutEvent();
+      layoutEvent.layoutID = layoutID;
+      _globalDispatcher.dispatchEvent(layoutEvent);      
+    }
+    
 		public function lockLayout():void {
 			_locked = true;
 			LogUtil.debug("LayoutManager: layout locked by myself");
@@ -229,8 +288,11 @@ package org.bigbluebutton.modules.layout.managers
 		
 		private function applyLayout(layout:LayoutDefinition):void {
 			_detectContainerChange = false;
-			if (layout != null)
-				layout.applyToCanvas(_canvas);
+			if (layout != null) {
+        layout.applyToCanvas(_canvas);
+        dispatchSwitchedLayoutEvent(layout.name);
+      }
+				
 			updateCurrentLayout(layout);
 			_detectContainerChange = true;
 		}
@@ -238,8 +300,9 @@ package org.bigbluebutton.modules.layout.managers
 		public function redefineLayout(e:RedefineLayoutEvent):void {
 			var layout:LayoutDefinition = e.layout;
 			applyLayout(layout);
-			if (!e.remote)
-				sendLayoutUpdate(layout);
+			if (!e.remote) {
+        sendLayoutUpdate(layout);        
+      }
 		}
 		
 		public function remoteLockLayout():void {
@@ -324,4 +387,4 @@ package org.bigbluebutton.modules.layout.managers
 				applyLayout(_currentLayout);
 		}
 	}
-}
+}

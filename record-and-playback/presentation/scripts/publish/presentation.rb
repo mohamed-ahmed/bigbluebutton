@@ -155,7 +155,7 @@ def processClearEvents
 		$pageCleared = clearEvent.xpath(".//pageNumber")[0].text()
 		slideFolder = clearEvent.xpath(".//presentation")[0].text()
 		#$clearPageTimes[clearTime] = [$pageCleared, $canvas_number, "presentation/#{slideFolder}/slide-#{$pageCleared.to_i+1}.png", nil]
-		$clearPageTimes[($prev_clear_time..clearTime)] = [$pageCleared, $canvas_number, "presentation/#{slideFolder}/slide-#{$pageCleared.to_i+1}.png", nil]
+		$clearPageTimes[($prev_clear_time..clearTime)] = [$pageCleared, $canvas_number, "presentation/#{slideFolder}/slide-#{$pageCleared}.png", nil]
 		$prev_clear_time = clearTime
 		$canvas_number+=1
 	end
@@ -412,7 +412,8 @@ def processSlideEvents
 			slide_start = ((slide_timestamp.to_f - $meeting_start.to_f) / 1000).round(1)
 			slide_number = node.xpath(".//slide")[0].text()
 			slide_src = "presentation/#{$presentation_name}/slide-#{slide_number.to_i + 1}.png"
-                        slide_text = "presentation/#{$presentation_name}/textfiles/slide-#{slide_number.to_i + 1}.txt"
+                        txt_file_path = "presentation/#{$presentation_name}/textfiles/slide-#{slide_number.to_i + 1}.txt"
+                        slide_text = File.exist?("#{$process_dir}/#{txt_file_path}") ? txt_file_path : nil
 			image_url = "#{$process_dir}/#{slide_src}"
 			slide_size = FastImage.size(image_url)
 			current_index = $slides_events.index(node)
@@ -469,7 +470,7 @@ def processShapesAndClears
 			# Print out the gathered/detected images. 
 			$slides_compiled.each do |key, val|
 				$val = val
-				$xml.image(:id => "image#{$val[2].to_i}", :in => $val[0].join(' '), :out => $val[1].join(' '), 'xlink:href' => key[0], :height => key[1], :width => key[2], :visibility => :hidden, :text => $val[3])
+				$xml.image(:id => "image#{$val[2].to_i}", :in => $val[0].join(' '), :out => $val[1].join(' '), 'xlink:href' => key[0], :height => key[1], :width => key[2], :visibility => :hidden, :text => $val[3], :x => 0)
 				$canvas_number+=1
 				$xml.g(:class => :canvas, :id => "canvas#{$val[2].to_i}", :image => "image#{$val[2].to_i}", :display => :none) do
 					
@@ -790,5 +791,6 @@ if ($playback == "presentation")
 end
 
 performance_end = Time.now
+
 
 

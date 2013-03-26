@@ -1,31 +1,29 @@
 /**
 * BigBlueButton open source conferencing system - http://www.bigbluebutton.org/
-*
-* Copyright (c) 2010 BigBlueButton Inc. and by respective authors (see below).
+* 
+* Copyright (c) 2012 BigBlueButton Inc. and by respective authors (see below).
 *
 * This program is free software; you can redistribute it and/or modify it under the
 * terms of the GNU Lesser General Public License as published by the Free Software
-* Foundation; either version 2.1 of the License, or (at your option) any later
+* Foundation; either version 3.0 of the License, or (at your option) any later
 * version.
-*
+* 
 * BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY
 * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 *
 * You should have received a copy of the GNU Lesser General Public License along
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
-* 
+*
 */
 package org.bigbluebutton.modules.listeners.business
 {
-	import com.asfusion.mate.events.Dispatcher;
-	
+	import com.asfusion.mate.events.Dispatcher;	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.NetStatusEvent;
 	import flash.net.NetConnection;
 	import flash.net.Responder;
-	import flash.net.SharedObject;
-	
+	import flash.net.SharedObject;	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.EventConstants;
 	import org.bigbluebutton.core.UsersUtil;
@@ -37,8 +35,7 @@ package org.bigbluebutton.modules.listeners.business
 	import org.bigbluebutton.modules.listeners.business.vo.Listeners;
 	import org.bigbluebutton.modules.listeners.events.ListenersEvent;
 
-	public class ListenersSOService
-	{
+	public class ListenersSOService {
 		private static const LOGNAME:String = "[ListenersSOService]";		
 		private var _listenersSO : SharedObject;
 		private static const SHARED_OBJECT:String = "meetMeUsersSO";		
@@ -55,8 +52,7 @@ package org.bigbluebutton.modules.listeners.business
 		
 		private static var globalDispatcher:Dispatcher = new Dispatcher();
 							
-		public function ListenersSOService(listeners:Listeners, module:ListenersModule)
-		{			
+		public function ListenersSOService(listeners:Listeners, module:ListenersModule) {			
 			_listeners = listeners;		
 			_module = module;			
 			dispatcher = new Dispatcher();
@@ -82,8 +78,7 @@ package org.bigbluebutton.modules.listeners.business
 			}
 		}
 		
-	    private function join() : void
-		{
+    private function join():void {
 			trace("ListenertsSOService " + _module.uri);
 			_listenersSO = SharedObject.getRemote(SHARED_OBJECT, _module.uri, false);
 			_listenersSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
@@ -98,8 +93,7 @@ package org.bigbluebutton.modules.listeners.business
 			getRoomMuteState();
 		}
 		
-	    private function leave():void
-	    {
+    private function leave():void {
 	    	if (_listenersSO != null) {
 	    		_listenersSO.close();
 	    	}
@@ -111,6 +105,8 @@ package org.bigbluebutton.modules.listeners.business
 		}
 				
 		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean):void {
+      trace("***************** Voice user joining [" + cidName + "]");
+      
 			if (! _listeners.hasListener(userId)) {
 				var n:Listener = new Listener();
 				n.callerName = cidName != null ? cidName : "<Unknown Caller>";
@@ -127,20 +123,30 @@ package org.bigbluebutton.modules.listeners.business
 				var pattern:RegExp = /(.*)-(.*)$/;
 				var result:Object = pattern.exec(n.callerName);
 				if (result != null) {
+          
+          trace("******************** [" + n.callerName + "," + result[1] + "," + result[2] + "] ****************"); 
+          
 					/**
 					 * The first item is the userid and the second is the username.
 					 */
-					if (UserManager.getInstance().getConference().amIThisUser(result[1])) {
+          var externUserID:String = result[1] as String;
+          var internUserID:String = UsersUtil.externalUserIDToInternalUserID(externUserID);
+          
+					if (UsersUtil.getMyExternalUserID() == externUserID) {
 						UserManager.getInstance().getConference().setMyVoiceUserId(n.userid);						
 						UserManager.getInstance().getConference().muteMyVoice(n.muted);
 						UserManager.getInstance().getConference().setMyVoiceJoined(true);
 					}	
           
-          if (UsersUtil.hasUser(result[1])) {
-            var bu:BBBUser = UsersUtil.getUser(result[1]);
+          if (UsersUtil.hasUser(internUserID)) {
+            var bu:BBBUser = UsersUtil.getUser(internUserID);
             bu.voiceUserid = n.userid;
             bu.voiceMuted = n.muted;
             bu.voiceJoined = true;
+            
+            var bbbEvent:BBBEvent = new BBBEvent(BBBEvent.USER_VOICE_JOINED);
+            bbbEvent.payload.userID = bu.userID;            
+            globalDispatcher.dispatchEvent(bbbEvent);            
           }
           
 					n.callerName = result[2]; /* Store the username */
@@ -149,35 +155,49 @@ package org.bigbluebutton.modules.listeners.business
 				LogUtil.info(LOGNAME + "Adding listener [" + n.callerName + "," + userId + "]");
 				_listeners.addListener(n);
 				
-				globalDispatcher.dispatchEvent(new BBBEvent(BBBEvent.ADDED_LISTENER, n.callerName));
+//				globalDispatcher.dispatchEvent(new BBBEvent(BBBEvent.USER_VOICE_JOINED, n.callerName));
 			} else {
 				LogUtil.debug(LOGNAME + "There is a listener with userid " + userId + " " + cidName + " in the conference.");
 			}
 		}
 
-		public function userMute(userId:Number, mute:Boolean):void {
-			var l:Listener = _listeners.getListener(userId);			
+		public function userMute(userID:Number, mute:Boolean):void {
+			var l:Listener = _listeners.getListener(userID);			
 			if (l != null) {
 				l.muted = mute;
+        
+        if (l.muted) {
+          // When the user is muted, set the talking flag to false so that the UI will not display the
+          // user as talking even if muted.
+          userTalk(userID, false);
+        }
+        
 				/**
 				 * Let's store the voice userid so we can do push to talk.
 				 */
-				if (UserManager.getInstance().getConference().amIThisVoiceUser(userId)) {
+				if (UserManager.getInstance().getConference().amIThisVoiceUser(userID)) {
 					UserManager.getInstance().getConference().muteMyVoice(l.muted);
 				}				
         
-        var bu:BBBUser = UsersUtil.getVoiceUser(userId)
+        var bu:BBBUser = UsersUtil.getVoiceUser(userID)
         if (bu != null) {
           bu.voiceMuted = l.muted;
-        }        
-			}					
+          
+          LogUtil.debug("[" + bu.name + "] is now muted=[" + bu.voiceMuted + "]");
+          
+          var bbbEvent:BBBEvent = new BBBEvent(BBBEvent.USER_VOICE_MUTED);
+          bbbEvent.payload.muted = mute;
+          bbbEvent.payload.userID = bu.userID;
+          globalDispatcher.dispatchEvent(bbbEvent);
+        }     
+			}			     
 		}
 
 		public function userLockedMute(userId:Number, locked:Boolean):void {
 			var l:Listener = _listeners.getListener(userId);			
 			if (l != null) {
 				l.locked = locked;
-				LogUtil.debug(LOGNAME + 'Lock Un/Muting user ' + userId + " locked=" + locked);
+
 				/**
 				 * Let's store the voice userid so we can do push to talk.
 				 */
@@ -188,12 +208,18 @@ package org.bigbluebutton.modules.listeners.business
         var bu:BBBUser = UsersUtil.getVoiceUser(userId)
         if (bu != null) {
           bu.voiceLocked = l.locked;
+          LogUtil.debug("[" + bu.name + "] is now locked=[" + bu.voiceLocked + "] muted=[" + bu.voiceMuted + "]");
+          
+          var bbbEvent:BBBEvent = new BBBEvent(BBBEvent.USER_VOICE_LOCKED);
+          bbbEvent.payload.locked = bu.voiceLocked;
+          bbbEvent.payload.userID = bu.userID;
+          globalDispatcher.dispatchEvent(bbbEvent);
         }   
 			}					
 		}
 		
-		public function userTalk(userId:Number, talk:Boolean) : void
-		{
+		public function userTalk(userId:Number, talk:Boolean):void {
+      trace("ListenersSOService:: User talking event userID=[" + userId + "] talking=[" + talk + "]");
 			var l:Listener = _listeners.getListener(userId);			
 			if (l != null) {
 				l.talking = talk;
@@ -209,24 +235,31 @@ package org.bigbluebutton.modules.listeners.business
 			}	
 		}
 
-		public function userLeft(userId:Number):void
-		{
-			_listeners.removeListener(userId);	
+		public function userLeft(userID:Number):void {
+      // Set the user to not talking. This will update UIs that depend on the user talking state.
+      userTalk(userID, false);
+      
 			/**
 			 * Let's store the voice userid so we can do push to talk.
 			 */
-			if (UserManager.getInstance().getConference().amIThisVoiceUser(userId)) {
+			if (UserManager.getInstance().getConference().amIThisVoiceUser(userID)) {
 				UserManager.getInstance().getConference().setMyVoiceJoined(false);
 				UserManager.getInstance().getConference().setMyVoiceUserId(0);
 				UserManager.getInstance().getConference().setMyVoiceJoined(false);
 			}
       
-      var bu:BBBUser = UsersUtil.getVoiceUser(userId)
+      var bu:BBBUser = UsersUtil.getVoiceUser(userID)
       if (bu != null) {
         bu.voiceUserid = 0;
         bu.voiceMuted = false;
         bu.voiceJoined = false;
+        
+        var bbbEvent:BBBEvent = new BBBEvent(BBBEvent.USER_VOICE_LEFT);
+        bbbEvent.payload.userID = bu.userID;
+        globalDispatcher.dispatchEvent(bbbEvent);
       }
+      
+      _listeners.removeListener(userID);
 		}
 		
 		public function ping(message:String):void {

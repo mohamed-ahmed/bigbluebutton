@@ -1,20 +1,20 @@
 /**
 * BigBlueButton open source conferencing system - http://www.bigbluebutton.org/
-*
-* Copyright (c) 2010 BigBlueButton Inc. and by respective authors (see below).
+* 
+* Copyright (c) 2012 BigBlueButton Inc. and by respective authors (see below).
 *
 * This program is free software; you can redistribute it and/or modify it under the
 * terms of the GNU Lesser General Public License as published by the Free Software
-* Foundation; either version 2.1 of the License, or (at your option) any later
+* Foundation; either version 3.0 of the License, or (at your option) any later
 * version.
-*
+* 
 * BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY
 * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 *
 * You should have received a copy of the GNU Lesser General Public License along
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
-* 
+*
 */
 package org.bigbluebutton.modules.listeners.business 
 {
@@ -23,6 +23,10 @@ package org.bigbluebutton.modules.listeners.business
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	
+	import org.bigbluebutton.core.UsersUtil;
+	import org.bigbluebutton.core.events.VoiceConfEvent;
+	import org.bigbluebutton.main.model.users.BBBUser;
+	import org.bigbluebutton.main.model.users.events.KickUserEvent;
 	import org.bigbluebutton.modules.listeners.business.vo.Listeners;
 	import org.bigbluebutton.modules.listeners.events.ListenersCommand;
 	import org.bigbluebutton.modules.listeners.events.ListenersEvent;
@@ -92,26 +96,31 @@ package org.bigbluebutton.modules.listeners.business
 			}
 		}
 
-		public function muteUnmuteUser(command:ListenersCommand):void
+		public function muteUnmuteUser(command:VoiceConfEvent):void
 		{
 			_listenersService.muteUnmuteUser(command.userid, command.mute);		
 		}
 
-		public function lockMuteUser(command:ListenersCommand):void
+		public function lockMuteUser(command:VoiceConfEvent):void
 		{
 			_listenersService.lockMuteUser(command.userid, command.lock);		
 		}
 		
-		public function muteAllUsers(command:ListenersCommand):void
+		public function muteAllUsers(command:VoiceConfEvent):void
 		{	
 			_listenersService.muteAllUsers(true);			
 		}
 		
-		public function unmuteAllUsers(command:ListenersCommand):void{
+		public function unmuteAllUsers(command:VoiceConfEvent):void{
 			_listenersService.muteAllUsers(false);
 		}
 		
-		public function ejectUser(command:ListenersCommand):void
+    public function kickUser(event:KickUserEvent):void {
+      var user:BBBUser = UsersUtil.getUser(event.userid);
+      _listenersService.ejectUser(user.voiceUserid);
+    }
+ 
+		public function ejectUser(command:VoiceConfEvent):void
 		{
 			_listenersService.ejectUser(command.userid);			
 		}	

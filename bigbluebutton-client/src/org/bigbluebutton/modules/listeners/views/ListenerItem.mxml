@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  BigBlueButton open source conferencing system - http://www.bigbluebutton.org
-  
-  Copyright (c) 2010 BigBlueButton Inc. and by respective authors (see below).
-  
-  BigBlueButton is free software; you can redistribute it and/or modify it under the 
-  terms of the GNU Lesser General Public License as published by the Free Software 
-  Foundation; either version 2.1 of the License, or (at your option) any later 
-  version. 
-  
-  BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY 
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-  PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-  
-  You should have received a copy of the GNU Lesser General Public License along 
-  with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
- 
-  $Id: $
+
+BigBlueButton open source conferencing system - http://www.bigbluebutton.org/
+
+Copyright (c) 2012 BigBlueButton Inc. and by respective authors (see below).
+
+This program is free software; you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 3.0 of the License, or (at your option) any later
+version.
+
+BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along
+with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
+
 -->
 
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" 
@@ -26,13 +26,14 @@
 	
 	<mx:Script>
 		<![CDATA[
-			import flash.events.MouseEvent;			
-			import mx.controls.Image;
-			import mx.controls.Label;
-			import mx.controls.TileList;			
-			import org.bigbluebutton.common.Images;
-			import org.bigbluebutton.modules.listeners.events.ListenersCommand;
-			import org.bigbluebutton.util.i18n.ResourceUtil; 
+      import flash.events.MouseEvent;     
+      import mx.controls.Image;
+      import mx.controls.Label;
+      import mx.controls.TileList;    
+      import org.bigbluebutton.common.Images;
+      import org.bigbluebutton.common.LogUtil;
+      import org.bigbluebutton.core.events.VoiceConfEvent;
+      import org.bigbluebutton.util.i18n.ResourceUtil; 
 			
 			private var images:Images = new Images();
 			
@@ -41,7 +42,7 @@
 			[Bindable] private var muteIcon:Class = images.sound_mute;
 			[Bindable] private var unmuteIcon:Class = images.sound_none;
 			[Bindable] private var talkIcon:Object = images.sound;   		
-			[Bindable] private var ejectIcon:Class = images.delete_icon;
+			[Bindable] private var ejectIcon:Class = images.cancel;
 			[Bindable] private var statusTooltip : String = "";
 			[Bindable] private var ejectTooltip : String = ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip');
 			[Bindable] private var moderator:Boolean = false;
@@ -55,14 +56,14 @@
 			}
 			
 			public function muteUser():void {
-				var e:ListenersCommand = new ListenersCommand(ListenersCommand.MUTE_USER);
+				var e:VoiceConfEvent = new VoiceConfEvent(VoiceConfEvent.MUTE_USER);
 				e.userid = data.userid;
 				e.mute = !data.muted; // toggle muted
 				dispatchEvent(e);
 			}	
 			
 			public function lockMuteUser():void {
-				var e:ListenersCommand = new ListenersCommand(ListenersCommand.LOCK_MUTE_USER);
+				var e:VoiceConfEvent = new VoiceConfEvent(VoiceConfEvent.LOCK_MUTE_USER);
 				e.userid = data.userid;
 				e.lock = !data.locked;
 				dispatchEvent(e);
@@ -93,7 +94,7 @@
 			
 			private function handleEjectButtonClick():void {
 				//proxy.ejectUser(listenersList.selectedItem.userid);
-				var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
+				var ejectCommand:VoiceConfEvent = new VoiceConfEvent(VoiceConfEvent.EJECT_USER);
 				ejectCommand.userid = data.userid;
 				dispatchEvent(ejectCommand);
 			}	 
