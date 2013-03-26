@@ -1,5 +1,7 @@
 package org.bigbluebutton.conference;
 
+import java.util.Map;
+
 import org.bigbluebutton.conference.messages.in.chat.PublicChatHistoryQuery;
 import org.bigbluebutton.conference.messages.in.meetings.MeetingStart;
 import org.bigbluebutton.conference.messages.in.meetings.MeetingStopped;
@@ -56,6 +58,62 @@ public class BigBlueButtonMain {
 	}
 	
 	public void unlockLayout(String meetingID, String layoutID) {
+		
+	}
+	
+	public void removePresentation(String meetingID, String presentationID) {
+		
+	}
+	
+	public void sendPresentationInfo(String meetingID, String userID) {
+		
+	}
+	
+	public void gotoSlide(String meetingID, Integer page) {
+		
+	}
+	
+	public void sharePresentation(String meetingID, String presentationID, Boolean share) {
+		
+	}
+	
+	public void sendCursorUpdate(String meetingID, Double xPercent,Double yPercent) {
+		
+	}
+	
+	public void resizeAndMoveSlide(String meetingID, Double xOffset,Double yOffset,Double widthRatio,Double heightRatio) {
+		
+	}
+	
+	public void kickUser(String meetingID, String userID) {
+		
+	}
+	
+	public void assignPresenter(String meetingID, String newPresenterID, String assignedByID) {
+		
+	}
+	
+	public void sendUsers(String meetingID, String userID) {
+		
+	}
+	
+	public void setUserStatus(String meetingID, String userID, String statusName, Object statusValue) {
+		
+	}
+	
+	public void muteAllUsers(String meetingID, Boolean mute) {
+		
+	}
+	
+	public void muteUser(String meetingID, String userID, Boolean mute) {
+		
+	}
+	
+	public void lockMuteUser(String meetingID, String userID, Boolean lock) {
+		
+	}
+	
+	public void kickUSerFromVoid(String meetingID, String userID) {
 		
 	}
 	
