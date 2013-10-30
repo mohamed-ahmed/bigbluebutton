@@ -31,6 +31,9 @@ define [
         data: [x, y, 0, 0, @obj.attrs["stroke"], @obj.attrs["stroke-width"]]
       @obj
 
+      console.log ("make @obj: ")
+      console.log (@obj)
+
     # Update the rectangle dimensions
     # @param  {number} x1 the x value of the top left corner
     # @param  {number} y1 the y value of the top left corner
@@ -62,6 +65,12 @@ define [
           y: y
           width: width
           height: height
+
+        console.log("@obj: ")
+        console.log @obj
+
+        console.log("@paper: ")
+        console.log @
         ###else
           @obj.attr
             x: x

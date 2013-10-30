@@ -64,6 +64,8 @@ define [
         globals.events.on "connection:connected", =>
           @_registerEvents()
 
+      console.log("whiteboard_paper: @");
+      console.log(@)
       
 
     # Override the close() to unbind events.
@@ -443,6 +445,7 @@ define [
       @globalyOffset = yOffset
       @globalwidthRatio = widthRatio
       @globalheightRatio = heightRatio
+      @raphaelObj.zoomRatio = widthRatio
 
       [slideWidth, slideHeight] = @_currentSlideOriginalDimensions()
       #console.log("xOffset: " + xOffset + ", yOffset: " + yOffset);

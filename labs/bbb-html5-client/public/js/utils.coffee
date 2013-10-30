@@ -38,7 +38,7 @@ define [
     thickness = "1" unless thickness? and thickness
     r =
       stroke: if stroke.toString().match(/\#.*/) then stroke else  Utils.colourToHex(stroke)
-      "stroke-width": if thickness.toString().match(/.*px$/) then thickness else "#{thickness}px"
+      "stroke-width":  thickness
     r
 
   # Convert a color `value` as integer to a hex color (e.g. 255 to #0000ff)
